@@ -7,6 +7,8 @@ public class PlayerHealth : MonoBehaviour
     public int hp = 3;
     public Transform campRespawnPoint;
 
+    bool isGameOver;
+
     void Awake()
     {
         if (Instance != null && Instance != this)
@@ -22,12 +24,16 @@ public class PlayerHealth : MonoBehaviour
 
     public void Heal(int amount)
     {
+        if (isGameOver) return;
+
         hp += amount;
         hp = Mathf.Clamp(hp, 0, maxHP);
     }
 
     public void TakeJumpscareDamage(int damage)
     {
+        if (isGameOver) return;
+
         hp -= damage;
         hp = Mathf.Clamp(hp, 0, maxHP);
 
@@ -37,21 +43,33 @@ public class PlayerHealth : MonoBehaviour
             DayCycle.Instance.ForceDay();
         if (campRespawnPoint)
             transform.position = campRespawnPoint.position;
+
         if (hp <= 0)
-        {
-            Debug.Log("GAME OVER");
-        }
+            GameOver();
     }
 
     public void TakeSacrificeDamage(int damage)
     {
+        if (isGameOver) return;
+
         hp -= damage;
         hp = Mathf.Clamp(hp, 0, maxHP);
+
         if (hp <= 0)
         {
             if (InventoryManager.Instance)
                 InventoryManager.Instance.ClearInventory();
-            Debug.Log("GAME OVER");
+
+            GameOver();
         }
+    }
+
+    void GameOver()
+    {
+        isGameOver = true;
+        Debug.Log("GAME OVER");
+
+        if (GameOverUI.Instance)
+            GameOverUI.Instance.ShowGameOver();
     }
 }
